@@ -1,6 +1,8 @@
 package com.rescene.recard.trade.entity;
 
-import com.rescene.recard.global.BaseEntity;
+import com.rescene.recard.global.entity.BaseEntity;
+import com.rescene.recard.global.exception.BusinessException;
+import com.rescene.recard.global.exception.ErrorCode;
 import com.rescene.recard.photocard.entity.Photocard;
 import com.rescene.recard.user.entity.User;
 import jakarta.persistence.Column;
@@ -78,7 +80,7 @@ public class TradeRequest extends BaseEntity {
 
     private void ensureRequested() {
         if (status != TradeStatus.REQUESTED) {
-            throw new IllegalStateException("Trade request has already been processed");
+            throw new BusinessException(ErrorCode.TRADE_ALREADY_DONE);
         }
     }
 }

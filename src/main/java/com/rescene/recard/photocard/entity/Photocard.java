@@ -1,6 +1,6 @@
 package com.rescene.recard.photocard.entity;
 
-import com.rescene.recard.global.BaseEntity;
+import com.rescene.recard.global.entity.BaseEntity;
 import com.rescene.recard.user.entity.User;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
