@@ -2,6 +2,7 @@ package com.rescene.recard.photocard.service;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import com.rescene.recard.global.exception.BusinessException;
@@ -32,14 +33,15 @@ class PhotocardServiceImplTest {
 
     @Test
     void deleteOtherUsersPhotocardThrowsNotOwner() {
-        User owner = new User("owner");
+        User owner = mock(User.class);
+        given(owner.getId()).willReturn(1L);
         Photocard photocard = new Photocard(owner, PhotocardMember.WONI, "Album", null);
         given(photocardRepository.findById(1L)).willReturn(Optional.of(photocard));
 
         assertThatThrownBy(() -> photocardService.delete(1L, 2L))
-                .isInstanceOf(BusinessException.class)
-                .extracting(exception -> ((BusinessException) exception).getErrorCode())
-                .isEqualTo(ErrorCode.NOT_OWNER);
+                .isInstanceOfSatisfying(BusinessException.class,
+                        exception -> org.assertj.core.api.Assertions.assertThat(exception.getErrorCode())
+                                .isEqualTo(ErrorCode.NOT_OWNER));
 
         verify(photocardRepository).findById(1L);
     }
