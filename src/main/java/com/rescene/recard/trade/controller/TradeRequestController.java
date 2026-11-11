@@ -1,6 +1,6 @@
 package com.rescene.recard.trade.controller;
 
-import com.rescene.recard.global.ApiResponse;
+import com.rescene.recard.global.response.ApiResponse;
 import com.rescene.recard.trade.dto.CreateTradeRequestRequest;
 import com.rescene.recard.trade.dto.TradeRequestResponse;
 import com.rescene.recard.trade.service.TradeRequestService;

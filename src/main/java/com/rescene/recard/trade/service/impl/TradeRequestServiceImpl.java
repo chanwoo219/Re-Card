@@ -1,7 +1,7 @@
 package com.rescene.recard.trade.service.impl;
 
-import com.rescene.recard.global.BusinessException;
-import com.rescene.recard.global.ErrorCode;
+import com.rescene.recard.global.exception.BusinessException;
+import com.rescene.recard.global.exception.ErrorCode;
 import com.rescene.recard.photocard.entity.Photocard;
 import com.rescene.recard.photocard.repository.PhotocardRepository;
 import com.rescene.recard.trade.dto.CreateTradeRequestRequest;
