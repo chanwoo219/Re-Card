@@ -23,4 +23,12 @@ public class Photocard extends BaseEntity {
 
     protected Photocard() {
     }
+
+    public Long getId() {
+        return id;
+    }
+
+    public User getOwner() {
+        return owner;
+    }
 }
