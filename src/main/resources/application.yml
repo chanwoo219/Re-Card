@@ -21,3 +21,7 @@ spring:
   sql:
     init:
       mode: embedded
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
