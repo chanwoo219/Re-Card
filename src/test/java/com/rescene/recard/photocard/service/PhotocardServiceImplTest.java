@@ -11,6 +11,7 @@ import static org.mockito.Mockito.verify;
 import com.rescene.recard.global.exception.BusinessException;
 import com.rescene.recard.global.exception.ErrorCode;
 import com.rescene.recard.photocard.dto.PhotocardCreateRequest;
+import com.rescene.recard.photocard.dto.PhotocardUpdateRequest;
 import com.rescene.recard.photocard.entity.Photocard;
 import com.rescene.recard.photocard.entity.PhotocardMember;
 import com.rescene.recard.photocard.repository.PhotocardRepository;
@@ -52,6 +53,35 @@ class PhotocardServiceImplTest {
         assertThat(response.memo()).isEqualTo("mint condition");
         verify(userRepository).findById(5L);
         verify(photocardRepository).save(any(Photocard.class));
+    }
+
+    @Test
+    void updatePhotocardWhenRequesterIsOwner() {
+        User owner = mock(User.class);
+        given(owner.getId()).willReturn(5L);
+        Photocard photocard = new Photocard(owner, PhotocardMember.WONI, "Old Album", "old memo");
+        given(photocardRepository.findById(1L)).willReturn(Optional.of(photocard));
+
+        var response = photocardService.update(1L, 5L,
+                new PhotocardUpdateRequest(PhotocardMember.MAY, " New Album ", "new memo"));
+
+        assertThat(response.ownerId()).isEqualTo(5L);
+        assertThat(response.member()).isEqualTo(PhotocardMember.MAY);
+        assertThat(response.album()).isEqualTo("New Album");
+        assertThat(response.memo()).isEqualTo("new memo");
+        verify(photocardRepository).findById(1L);
+    }
+
+    @Test
+    void deletePhotocardWhenRequesterIsOwner() {
+        User owner = mock(User.class);
+        given(owner.getId()).willReturn(5L);
+        Photocard photocard = new Photocard(owner, PhotocardMember.WONI, "Album", null);
+        given(photocardRepository.findById(1L)).willReturn(Optional.of(photocard));
+
+        photocardService.delete(1L, 5L);
+
+        verify(photocardRepository).delete(photocard);
     }
 
     @Test
