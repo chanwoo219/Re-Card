@@ -63,7 +63,6 @@ class TradeRequestServiceImplTest {
     void acceptingAlreadyAcceptedTradeThrowsTradeAlreadyDone() {
         User requester = mock(User.class);
         User receiver = mock(User.class);
-        given(receiver.getId()).willReturn(2L);
 
         Photocard offeredCard = new Photocard(requester, PhotocardMember.WONI, "Album A", null);
         Photocard targetCard = new Photocard(receiver, PhotocardMember.LIV, "Album B", null);
