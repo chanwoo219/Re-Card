@@ -11,6 +11,7 @@ import com.rescene.recard.trade.repository.TradeRequestRepository;
 import com.rescene.recard.trade.service.TradeRequestService;
 import com.rescene.recard.user.entity.User;
 import com.rescene.recard.user.repository.UserRepository;
+import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,5 +51,14 @@ public class TradeRequestServiceImpl implements TradeRequestService {
         TradeRequest tradeRequest = tradeRequestRepository.save(
                 new TradeRequest(requester, offeredCard, targetCard));
         return TradeRequestResponse.from(tradeRequest);
+    }
+
+    @Override
+    public List<TradeRequestResponse> findReceived(Long ownerId) {
+        userRepository.findById(ownerId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        return tradeRequestRepository.findAllByTargetCard_Owner_Id(ownerId).stream()
+                .map(TradeRequestResponse::from)
+                .toList();
     }
 }
