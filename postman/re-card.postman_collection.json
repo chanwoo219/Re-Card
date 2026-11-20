@@ -381,6 +381,31 @@
               }
             }
           }
+        },
+        {
+          "name": "교환 요청 취소",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "3"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/api/trades/2",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "trades",
+                "2"
+              ]
+            }
+          }
         }
       ]
     }
