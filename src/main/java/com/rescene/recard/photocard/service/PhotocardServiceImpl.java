@@ -6,6 +6,8 @@ import com.rescene.recard.photocard.dto.PhotocardCreateRequest;
 import com.rescene.recard.photocard.dto.PhotocardResponse;
 import com.rescene.recard.photocard.dto.PhotocardUpdateRequest;
 import com.rescene.recard.photocard.entity.Photocard;
+import com.rescene.recard.photocard.entity.PhotocardMember;
+import java.util.List;
 import com.rescene.recard.photocard.repository.PhotocardRepository;
 import com.rescene.recard.user.entity.User;
 import com.rescene.recard.user.repository.UserRepository;
@@ -34,6 +36,13 @@ public class PhotocardServiceImpl implements PhotocardService {
     @Override
     public PhotocardResponse get(Long id) {
         return PhotocardResponse.from(findPhotocard(id));
+    }
+
+    @Override
+    public List<PhotocardResponse> search(PhotocardMember member, String album) {
+        return photocardRepository.search(member, album).stream()
+                .map(PhotocardResponse::from)
+                .toList();
     }
 
     @Override
