@@ -1,0 +1,957 @@
+{
+  "info": {
+    "name": "re:card API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "서버 실행 후 폴더 순서대로 실행하면 모든 API를 테스트합니다. 앞 요청에서 만든 id를 다음 요청이 이어받습니다."
+  },
+  "item": [
+    {
+      "name": "User",
+      "item": [
+        {
+          "name": "1. 사용자 생성 (A)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('상태 코드 201', () => pm.response.to.have.status(201));",
+                  "pm.test('success true', () => pm.expect(pm.response.json().success).to.eql(true));",
+                  "pm.collectionVariables.set('userA', pm.response.json().data.id);"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('suffix', String(Date.now()).slice(-6));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nickname\": \"userA_{{suffix}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "2. 사용자 생성 (B)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('상태 코드 201', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('userB', pm.response.json().data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nickname\": \"userB_{{suffix}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "3. 닉네임 중복 생성 (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('상태 코드 409', () => pm.response.to.have.status(409));",
+                  "pm.test('오류 코드 DUPLICATE_NICKNAME', () => pm.expect(pm.response.json().error.code).to.eql('DUPLICATE_NICKNAME'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nickname\": \"userA_{{suffix}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "4. 사용자 조회",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('상태 코드 200', () => pm.response.to.have.status(200));",
+                  "pm.test('success true', () => pm.expect(pm.response.json().success).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userA}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "{{userA}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "5. 없는 사용자 조회 (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('상태 코드 404', () => pm.response.to.have.status(404));",
+                  "pm.test('오류 코드 USER_NOT_FOUND', () => pm.expect(pm.response.json().error.code).to.eql('USER_NOT_FOUND'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "999999"
+              ]
+            }
+          }
+        },
+        {
+          "name": "6. 닉네임 수정",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('상태 코드 200', () => pm.response.to.have.status(200));",
+                  "pm.test('닉네임 변경됨', () => pm.expect(pm.response.json().data.nickname).to.eql('newA_'+pm.collectionVariables.get('suffix')));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "{{userA}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userA}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "{{userA}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nickname\": \"newA_{{suffix}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Photocard",
+      "item": [
+        {
+          "name": "7. 포토카드 등록 (A의 LIV)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('상태 코드 201', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('cardA', pm.response.json().data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "{{userA}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/photocards",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "photocards"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"member\": \"LIV\",\n  \"album\": \"Re:Scene\",\n  \"memo\": \"상태 좋음\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "8. 포토카드 등록 (B의 WONI)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('상태 코드 201', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('cardB', pm.response.json().data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "{{userB}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/photocards",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "photocards"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"member\": \"WONI\",\n  \"album\": \"Scenedrome\",\n  \"memo\": \"미개봉급\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "9. 포토카드 검색 (member=LIV)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('상태 코드 200', () => pm.response.to.have.status(200));",
+                  "pm.test('모두 LIV', () => pm.response.json().data.forEach(c => pm.expect(c.member).to.eql('LIV')));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/photocards?member=LIV",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "photocards"
+              ],
+              "query": [
+                {
+                  "key": "member",
+                  "value": "LIV"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "10. 포토카드 검색 (member+album)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('상태 코드 200', () => pm.response.to.have.status(200));",
+                  "pm.test('조건 일치', () => pm.response.json().data.forEach(c => { pm.expect(c.member).to.eql('WONI'); pm.expect(c.album).to.eql('Scenedrome'); }));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/photocards?member=WONI&album=Scenedrome",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "photocards"
+              ],
+              "query": [
+                {
+                  "key": "member",
+                  "value": "WONI"
+                },
+                {
+                  "key": "album",
+                  "value": "Scenedrome"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "11. 포토카드 상세 조회",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('상태 코드 200', () => pm.response.to.have.status(200));",
+                  "pm.test('success true', () => pm.expect(pm.response.json().success).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/photocards/{{cardA}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "photocards",
+                "{{cardA}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "12. 포토카드 수정",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('상태 코드 200', () => pm.response.to.have.status(200));",
+                  "pm.test('메모 변경됨', () => pm.expect(pm.response.json().data.memo).to.eql('슬리브 보관'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "{{userA}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/photocards/{{cardA}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "photocards",
+                "{{cardA}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"member\": \"LIV\",\n  \"album\": \"Re:Scene\",\n  \"memo\": \"슬리브 보관\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "13. 남의 카드 수정 (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('상태 코드 403', () => pm.response.to.have.status(403));",
+                  "pm.test('오류 코드 NOT_OWNER', () => pm.expect(pm.response.json().error.code).to.eql('NOT_OWNER'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "{{userB}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/photocards/{{cardA}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "photocards",
+                "{{cardA}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"member\": \"LIV\",\n  \"album\": \"Re:Scene\",\n  \"memo\": \"x\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Trade",
+      "item": [
+        {
+          "name": "14. 교환 요청 생성 (A→B)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('상태 코드 201', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('tradeId', pm.response.json().data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "{{userA}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/trades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "trades"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"offeredCardId\": {{cardA}},\n  \"targetCardId\": {{cardB}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "15. 받은 교환 요청 조회 (B)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('상태 코드 200', () => pm.response.to.have.status(200));",
+                  "pm.test('요청 포함', () => pm.expect(pm.response.json().data.map(t => t.id)).to.include(Number(pm.collectionVariables.get('tradeId'))));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userB}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/trades/received",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "trades",
+                "received"
+              ]
+            }
+          }
+        },
+        {
+          "name": "16. 교환 수락 (B)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('상태 코드 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "{{userB}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/trades/{{tradeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "trades",
+                "{{tradeId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"ACCEPTED\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "17. 이미 처리된 요청 재수락 (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('상태 코드 409', () => pm.response.to.have.status(409));",
+                  "pm.test('오류 코드 TRADE_ALREADY_DONE', () => pm.expect(pm.response.json().error.code).to.eql('TRADE_ALREADY_DONE'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "{{userB}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/trades/{{tradeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "trades",
+                "{{tradeId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"ACCEPTED\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "18. 교환 후 소유자 확인",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('상태 코드 200', () => pm.response.to.have.status(200));",
+                  "pm.test('A의 카드가 B 소유로 바뀜', () => pm.expect(pm.response.json().data.ownerId).to.eql(Number(pm.collectionVariables.get('userB'))));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/photocards/{{cardA}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "photocards",
+                "{{cardA}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Delete",
+      "item": [
+        {
+          "name": "19. 교환에 연결된 카드 삭제 (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('상태 코드 409', () => pm.response.to.have.status(409));",
+                  "pm.test('오류 코드 CARD_IN_TRADE', () => pm.expect(pm.response.json().error.code).to.eql('CARD_IN_TRADE'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userB}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/photocards/{{cardA}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "photocards",
+                "{{cardA}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "20. 삭제용 포토카드 등록 (A)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('상태 코드 201', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('cardDel', pm.response.json().data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "{{userA}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/photocards",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "photocards"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"member\": \"ZENA\",\n  \"album\": \"Lxvelation\",\n  \"memo\": \"삭제 테스트용\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "21. 포토카드 삭제",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('상태 코드 204', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userA}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/photocards/{{cardDel}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "photocards",
+                "{{cardDel}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "22. 삭제된 카드 조회 (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('상태 코드 404', () => pm.response.to.have.status(404));",
+                  "pm.test('오류 코드 CARD_NOT_FOUND', () => pm.expect(pm.response.json().error.code).to.eql('CARD_NOT_FOUND'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/photocards/{{cardDel}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "photocards",
+                "{{cardDel}}"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "suffix",
+      "value": ""
+    },
+    {
+      "key": "userA",
+      "value": ""
+    },
+    {
+      "key": "userB",
+      "value": ""
+    },
+    {
+      "key": "cardA",
+      "value": ""
+    },
+    {
+      "key": "cardB",
+      "value": ""
+    },
+    {
+      "key": "cardDel",
+      "value": ""
+    },
+    {
+      "key": "tradeId",
+      "value": ""
+    }
+  ]
+}
