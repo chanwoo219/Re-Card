@@ -2,13 +2,14 @@ package com.rescene.recard.trade.controller;
 
 import com.rescene.recard.global.response.ApiResponse;
 import com.rescene.recard.trade.dto.CreateTradeRequestRequest;
-import com.rescene.recard.trade.dto.TradeRequestUpdateRequest;
 import com.rescene.recard.trade.dto.TradeRequestResponse;
+import com.rescene.recard.trade.dto.TradeRequestUpdateRequest;
 import com.rescene.recard.trade.service.TradeRequestService;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -48,5 +49,13 @@ public class TradeRequestController {
             @RequestHeader("X-User-Id") Long ownerId,
             @Valid @RequestBody TradeRequestUpdateRequest request) {
         return ApiResponse.success(tradeRequestService.update(id, ownerId, request));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> cancel(
+            @PathVariable Long id,
+            @RequestHeader("X-User-Id") Long requesterId) {
+        tradeRequestService.cancel(id, requesterId);
+        return ResponseEntity.noContent().build();
     }
 }
