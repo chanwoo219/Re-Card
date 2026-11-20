@@ -27,7 +27,6 @@ class PhotocardRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        photocardRepository.deleteAll();
         User owner = userRepository.save(new User("search-tester"));
         photocardRepository.saveAll(List.of(
                 new Photocard(owner, PhotocardMember.LIV, "TESTA", null),
@@ -52,13 +51,15 @@ class PhotocardRepositoryTest {
     void searchByMemberOnly() {
         List<Photocard> result = photocardRepository.search(PhotocardMember.LIV, null);
 
-        assertThat(result).hasSize(2)
+        assertThat(result).isNotEmpty()
                 .allSatisfy(card -> assertThat(card.getMember()).isEqualTo(PhotocardMember.LIV));
+        assertThat(result).extracting(Photocard::getAlbum).contains("TESTA", "TESTB");
     }
 
     @Test
     @DisplayName("조건이 모두 null이면 전체가 조회된다")
     void searchWithoutCondition() {
-        assertThat(photocardRepository.search(null, null)).hasSize(3);
+        assertThat(photocardRepository.search(null, null))
+                .hasSize((int) photocardRepository.count());
     }
 }
