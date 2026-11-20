@@ -6,7 +6,9 @@ import com.rescene.recard.photocard.entity.Photocard;
 import com.rescene.recard.photocard.repository.PhotocardRepository;
 import com.rescene.recard.trade.dto.CreateTradeRequestRequest;
 import com.rescene.recard.trade.dto.TradeRequestResponse;
+import com.rescene.recard.trade.dto.TradeRequestUpdateRequest;
 import com.rescene.recard.trade.entity.TradeRequest;
+import com.rescene.recard.trade.entity.TradeStatus;
 import com.rescene.recard.trade.repository.TradeRequestRepository;
 import com.rescene.recard.trade.service.TradeRequestService;
 import com.rescene.recard.user.entity.User;
@@ -60,5 +62,40 @@ public class TradeRequestServiceImpl implements TradeRequestService {
         return tradeRequestRepository.findAllByTargetCard_Owner_Id(ownerId).stream()
                 .map(TradeRequestResponse::from)
                 .toList();
+    }
+
+    @Override
+    @Transactional
+    public TradeRequestResponse update(Long tradeRequestId,
+                                       Long ownerId,
+                                       TradeRequestUpdateRequest request) {
+        User owner = userRepository.findById(ownerId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        TradeRequest tradeRequest = tradeRequestRepository.findById(tradeRequestId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.TRADE_NOT_FOUND));
+
+        if (tradeRequest.getStatus() != TradeStatus.REQUESTED) {
+            throw new BusinessException(ErrorCode.TRADE_ALREADY_DONE);
+        }
+        if (!owner.getId().equals(tradeRequest.getTargetCard().getOwner().getId())) {
+            throw new BusinessException(ErrorCode.NOT_OWNER);
+        }
+
+        if (request.status() == TradeStatus.ACCEPTED) {
+            var offeredCard = tradeRequest.getOfferedCard();
+            var targetCard = tradeRequest.getTargetCard();
+            User offeredCardOwner = offeredCard.getOwner();
+            User targetCardOwner = targetCard.getOwner();
+
+            offeredCard.changeOwner(targetCardOwner);
+            targetCard.changeOwner(offeredCardOwner);
+            tradeRequest.accept();
+        } else if (request.status() == TradeStatus.REJECTED) {
+            tradeRequest.reject();
+        } else {
+            throw new BusinessException(ErrorCode.INVALID_INPUT);
+        }
+
+        return TradeRequestResponse.from(tradeRequest);
     }
 }
