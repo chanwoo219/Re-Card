@@ -20,6 +20,7 @@ import com.rescene.recard.user.repository.UserRepository;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import com.rescene.recard.trade.repository.TradeRequestRepository;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -32,6 +33,9 @@ class PhotocardServiceImplTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private TradeRequestRepository tradeRequestRepository;
 
     @InjectMocks
     private PhotocardServiceImpl photocardService;
@@ -116,6 +120,19 @@ class PhotocardServiceImplTest {
         photocardService.delete(1L, 5L);
 
         verify(photocardRepository).delete(photocard);
+    }
+
+    @Test
+    void deletePhotocardInTradeThrowsCardInTrade() {
+        User owner = mock(User.class);
+        given(owner.getId()).willReturn(5L);
+        Photocard photocard = new Photocard(owner, PhotocardMember.WONI, "Album", null);
+        given(photocardRepository.findById(1L)).willReturn(Optional.of(photocard));
+        given(tradeRequestRepository.existsByOfferedCard_IdOrTargetCard_Id(1L, 1L)).willReturn(true);
+
+        assertThatThrownBy(() -> photocardService.delete(1L, 5L))
+                .isInstanceOfSatisfying(BusinessException.class,
+                        exception -> assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.CARD_IN_TRADE));
     }
 
     @Test

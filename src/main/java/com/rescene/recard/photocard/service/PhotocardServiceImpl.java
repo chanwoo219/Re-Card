@@ -9,6 +9,7 @@ import com.rescene.recard.photocard.entity.Photocard;
 import com.rescene.recard.photocard.entity.PhotocardMember;
 import java.util.List;
 import com.rescene.recard.photocard.repository.PhotocardRepository;
+import com.rescene.recard.trade.repository.TradeRequestRepository;
 import com.rescene.recard.user.entity.User;
 import com.rescene.recard.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ public class PhotocardServiceImpl implements PhotocardService {
 
     private final PhotocardRepository photocardRepository;
     private final UserRepository userRepository;
+    private final TradeRequestRepository tradeRequestRepository;
 
     @Override
     @Transactional
@@ -56,7 +58,12 @@ public class PhotocardServiceImpl implements PhotocardService {
     @Override
     @Transactional
     public void delete(Long id, Long userId) {
-        photocardRepository.delete(findOwnedPhotocard(id, userId));
+        Photocard photocard = findOwnedPhotocard(id, userId);
+        // 교환 요청이 참조 중인 카드를 지우면 FK 위반(500)이 나므로 먼저 막는다
+        if (tradeRequestRepository.existsByOfferedCard_IdOrTargetCard_Id(id, id)) {
+            throw new BusinessException(ErrorCode.CARD_IN_TRADE);
+        }
+        photocardRepository.delete(photocard);
     }
 
     private Photocard findPhotocard(Long id) {

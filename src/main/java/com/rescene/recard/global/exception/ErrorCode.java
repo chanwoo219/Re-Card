@@ -14,7 +14,8 @@ public enum ErrorCode {
     CARD_NOT_FOUND(HttpStatus.NOT_FOUND, "포토카드를 찾을 수 없습니다."),
     NOT_OWNER(HttpStatus.FORBIDDEN, "본인의 리소스만 처리할 수 있습니다."),
     TRADE_NOT_FOUND(HttpStatus.NOT_FOUND, "교환 요청을 찾을 수 없습니다."),
-    TRADE_ALREADY_DONE(HttpStatus.CONFLICT, "이미 처리된 교환 요청입니다.");
+    TRADE_ALREADY_DONE(HttpStatus.CONFLICT, "이미 처리된 교환 요청입니다."),
+    CARD_IN_TRADE(HttpStatus.CONFLICT, "교환 요청에 연결된 포토카드는 삭제할 수 없습니다.");
 
     private final HttpStatus status;
     private final String message;
