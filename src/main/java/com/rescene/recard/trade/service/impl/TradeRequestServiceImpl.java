@@ -98,4 +98,22 @@ public class TradeRequestServiceImpl implements TradeRequestService {
 
         return TradeRequestResponse.from(tradeRequest);
     }
+
+    @Override
+    @Transactional
+    public void cancel(Long tradeRequestId, Long requesterId) {
+        User requester = userRepository.findById(requesterId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        TradeRequest tradeRequest = tradeRequestRepository.findById(tradeRequestId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.TRADE_NOT_FOUND));
+
+        if (!requester.getId().equals(tradeRequest.getRequester().getId())) {
+            throw new BusinessException(ErrorCode.NOT_OWNER);
+        }
+        if (tradeRequest.getStatus() != TradeStatus.REQUESTED) {
+            throw new BusinessException(ErrorCode.TRADE_ALREADY_DONE);
+        }
+
+        tradeRequestRepository.delete(tradeRequest);
+    }
 }

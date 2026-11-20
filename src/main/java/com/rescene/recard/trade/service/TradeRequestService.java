@@ -11,4 +11,6 @@ public interface TradeRequestService {
     List<TradeRequestResponse> findReceived(Long ownerId);
 
     TradeRequestResponse update(Long tradeRequestId, Long ownerId, TradeRequestUpdateRequest request);
+
+    void cancel(Long tradeRequestId, Long requesterId);
 }
