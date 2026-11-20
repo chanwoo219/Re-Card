@@ -56,6 +56,16 @@ class PhotocardServiceImplTest {
     }
 
     @Test
+    void createPhotocardWhenUserDoesNotExistThrowsUserNotFound() {
+        given(userRepository.findById(5L)).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> photocardService.create(5L,
+                new PhotocardCreateRequest(PhotocardMember.WONI, "Album", null)))
+                .isInstanceOfSatisfying(BusinessException.class,
+                        exception -> assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_NOT_FOUND));
+    }
+
+    @Test
     void updatePhotocardWhenRequesterIsOwner() {
         User owner = mock(User.class);
         given(owner.getId()).willReturn(5L);
@@ -70,6 +80,30 @@ class PhotocardServiceImplTest {
         assertThat(response.album()).isEqualTo("New Album");
         assertThat(response.memo()).isEqualTo("new memo");
         verify(photocardRepository).findById(1L);
+    }
+
+    @Test
+    void updateOtherUsersPhotocardThrowsNotOwner() {
+        User owner = mock(User.class);
+        given(owner.getId()).willReturn(1L);
+        Photocard photocard = new Photocard(owner, PhotocardMember.WONI, "Album", null);
+        given(photocardRepository.findById(1L)).willReturn(Optional.of(photocard));
+
+        assertThatThrownBy(() -> photocardService.update(1L, 2L,
+                new PhotocardUpdateRequest(PhotocardMember.MAY, "New Album", "memo")))
+                .isInstanceOfSatisfying(BusinessException.class,
+                        exception -> assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.NOT_OWNER));
+
+        verify(photocardRepository).findById(1L);
+    }
+
+    @Test
+    void getPhotocardWhenCardDoesNotExistThrowsCardNotFound() {
+        given(photocardRepository.findById(404L)).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> photocardService.get(404L))
+                .isInstanceOfSatisfying(BusinessException.class,
+                        exception -> assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.CARD_NOT_FOUND));
     }
 
     @Test
